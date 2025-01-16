@@ -2,8 +2,20 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 const Produit = require("../models/prodModel");
+const cache = require('../services/cache');
 
 dotenv.config();
+
+// Voir toutes les Produits
+const getAllPub =  async (req, res) => {
+  const cachedProducts = await cache.get('products');
+  if (cachedProducts) {
+    return res.json(JSON.parse(cachedProducts));
+  }
+  const products = await Produit.find();
+  await cache.set('products', JSON.stringify(products), { EX: 300 }); // Expire après 5 min
+  res.json(products);
+};
 
 // nouvelle Produit
 const newPub = async (req, res) => {
@@ -14,17 +26,10 @@ const newPub = async (req, res) => {
     req.body.author = decoded.id; // Ajouter l'id de l'auteur au body
     const pub = new Produit(req.body);
     await pub.save();
+    // Supprimer les produits du cache
+    await cache.del('products');
+    
     res.status(201).send(pub);
-  } catch (error) {
-    res.status(400).send({ error: error.message });
-  }
-};
-
-// Voir toutes les Produits
-const getAllPub = async (req, res) => {
-  try {
-    const pubs = await Produit.find();
-    res.status(200).send(pubs);
   } catch (error) {
     res.status(400).send({ error: error.message });
   }
@@ -70,6 +75,9 @@ const updatePub = async (req, res) => {
       { new: true }
     );
 
+    // Supprimer les produits du cache
+    await cache.del('products');
+
     res.status(200).send(updatedPub);
   } catch (error) {
     res.status(400).send({ error: error.message });
@@ -98,6 +106,10 @@ const deletePub = async (req, res) => {
     if (pub.author.toString() !== userId) {
       return res.status(403).send({ error: "Forbidden: You are not the author of this produit" });
     }
+
+    // Supprimer les produits du cache
+    await cache.del('products');
+
     res.status(200).send("Produit supprimé");
   } catch (error) {
     res.status(400).send({ error: error.message });
