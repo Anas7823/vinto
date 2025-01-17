@@ -50,9 +50,6 @@ const updatePub = async (req, res) => {
   try {
     // Récupérer le token et vérifier l'utilisateur
     const token = req.headers.authorization?.split(" ")[1];
-    if (!token) {
-      return res.status(401).send({ error: "Unauthorized" });
-    }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET); // Décoder le token
     const userId = decoded.id; // Récupérer l'ID de l'utilisateur connecté
@@ -89,9 +86,6 @@ const deletePub = async (req, res) => {
   try {
     // Récupérer le token et vérifier l'utilisateur
     const token = req.headers.authorization?.split(" ")[1];
-    if (!token) {
-      return res.status(401).send({ error: "Unauthorized" });
-    }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET); // Décoder le token
     const userId = decoded.id; // Récupérer l'ID de l'utilisateur connecté
