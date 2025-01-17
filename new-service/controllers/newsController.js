@@ -6,7 +6,6 @@ dotenv.config();
 // nouvelle News
 const newNews = async (req, res) => {
   try {
-    req.body.author = decoded.id; // Ajouter l'id de l'auteur au body
     const news = new News(req.body);
     await news.save();
     res.status(201).send(pub);
