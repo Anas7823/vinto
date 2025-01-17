@@ -8,7 +8,7 @@ const newNews = async (req, res) => {
   try {
     const news = new News(req.body);
     await news.save();
-    res.status(201).send(pub);
+    res.status(201).send(news);
   } catch (error) {
     res.status(400).send({ error: error.message });
   }
